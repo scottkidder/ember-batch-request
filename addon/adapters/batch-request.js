@@ -1,13 +1,12 @@
 import DS from 'ember-data';
-import Ember from 'ember';
 import Inflector from 'ember-inflector';
+import { isPresent } from '@ember/utils';
 
 const { inflector } = Inflector;
 
 inflector.uncountable('parallel');
 inflector.uncountable('sequential');
 
-const { isPresent } = Ember;
 const { JSONAPIAdapter } = DS;
 
 export default JSONAPIAdapter.extend({
@@ -133,7 +132,7 @@ export default JSONAPIAdapter.extend({
     });
   },
 
-  _updateStoreOnCreateOrUpdate(completedResponses, records, actionName) {
+  _updateStoreOnCreateOrUpdate(completedResponses, records, /* actionName */) {
     completedResponses.forEach((body)=> {
       let ids;
 
