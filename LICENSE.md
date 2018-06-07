@@ -3,6 +3,7 @@
                     http://www.apache.org/licenses/
 
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+Copyright (c) 2018
 
 Definitions.
 

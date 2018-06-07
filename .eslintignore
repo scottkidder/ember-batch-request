@@ -1,1 +1,1 @@
-tests/
+/blueprints/*/files/**/*.js
