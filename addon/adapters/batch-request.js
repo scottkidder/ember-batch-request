@@ -22,26 +22,18 @@ export default JSONAPIAdapter.extend({
   },
 
   batchCreate(items, options) {
-    if (isPresent(options) && isPresent(options.skipStoreUpdate)) {
-      return this._batch(items, 'POST', options.skipStoreUpdate);
-    }
-
-    return this._batch(items, 'POST', false);
+    return this._batch(items, 'POST', options);
   },
 
   batchUpdate(items, options) {
-    if (isPresent(options) && isPresent(options.skipStoreUpdate)) {
-      return this._batch(items, 'PATCH', options.skipStoreUpdate);
-    }
-
-    return this._batch(items, 'PATCH', false);
+    return this._batch(items, 'PATCH', options);
   },
 
   batchDelete(items) {
     return this._batch(items, 'DELETE');
   },
 
-  _batch(items, actionName, skipStoreUpdate) {
+  _batch(items, actionName, { skipStoreUpdate = false, useModelUrl = false }) {
     const records = items;
     const requests = [];
 
@@ -51,13 +43,20 @@ export default JSONAPIAdapter.extend({
       requests.push(current);
       this._changeRootStateToInflight(item);
     });
-    const payload = this._buildPayloadHash(requests);
-    const apiBatchUrl = this.buildURL(this.get('apiBatchUrl')).replace(this.get('apiBatchUrl').dasherize().pluralize(), this.get('apiBatchUrl'));
-    const modelName = items[0]._internalModel.modelName;
+    const data = this._buildPayloadHash(requests);
 
-    return this.store.adapterFor(modelName).ajax(apiBatchUrl, actionName, {
-      data: payload
-    })
+    let url;
+    const { modelName } = items[0]._internalModel;
+    const adapter = this.store.adapterFor(modelName);
+
+    if (useModelUrl) {
+      url = adapter.buildURL(modelName);
+    } else {
+      url = this.buildURL(this.get('apiBatchUrl')).replace(this.get('apiBatchUrl').dasherize()
+        .pluralize(), this.get('apiBatchUrl'));
+    }
+
+    return adapter.ajax(url, actionName, { data })
     .then((result)=> {
       return this._batchResponse(result, actionName, records, skipStoreUpdate);
     });
