@@ -34,15 +34,14 @@ export default JSONAPIAdapter.extend({
 
   _batch(items, actionName, { skipStoreUpdate = false, useModelUrl = false }) {
     const records = items;
-    const requests = [];
+    const data = [];
 
     records.forEach((item)=> {
       const current = this._buildBatchPayload(item, actionName);
 
-      requests.push(current);
+      data.push(current);
       this._changeRootStateToInflight(item);
     });
-    const data = this._buildPayloadHash(requests);
 
     let url;
     const { modelName } = items[0]._internalModel;
@@ -171,35 +170,19 @@ export default JSONAPIAdapter.extend({
     }
   },
 
-  _buildPayloadHash(requests) {
-    const payloadHash = {};
-
-    payloadHash.requests = requests;
-
-    return payloadHash;
-  },
-
   _buildBatchPayload(item, actionName) {
-    let body, url;
-    const modelName = item._internalModel.modelName;
+    let body;
 
     if (actionName === 'POST') {
-      url = this.urlForCreateRecord(modelName);
-      body = item.serialize();
+      body = item.serialize().data;
+      body.id = item.id;
     } else if (actionName === 'PATCH') {
-      url = this.urlForUpdateRecord(item.id, modelName);
-      body = item.serialize();
+      body = item.serialize().data;
+      body.id = item.id;
     } else if (actionName === 'DELETE') {
-      url = this.urlForDeleteRecord(item.id, modelName);
       body = item.id;
     }
 
-    url = url.replace(this.get('host'), '').underscore();
-
-    return {
-      method: actionName,
-      url,
-      body
-    };
+    return body;
   }
 });
